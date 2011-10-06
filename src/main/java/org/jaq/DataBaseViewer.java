@@ -13,7 +13,7 @@ import java.util.Properties;
  * @author Jorge Rodriguez Barba
  *         <p/>
  */
-public class ViewerDB {
+public class DataBaseViewer {
 
     private String m_user, m_pass, m_connection_ip, m_connection_port, m_connection_sid;
 
@@ -149,40 +149,40 @@ public class ViewerDB {
         }
     }
 
-    private void printQueryResult(ResultSet rset) {
-        ResultSetMetaData rsetmd;
+    private void printQueryResult(ResultSet resultSet) {
+        ResultSetMetaData resultSetMetaData;
         int nCols;
         try {
-            rsetmd = rset.getMetaData();
-            nCols = rsetmd.getColumnCount();
+            resultSetMetaData = resultSet.getMetaData();
+            nCols = resultSetMetaData.getColumnCount();
             for (int i = 1; i <= nCols; i++) {
-                System.out.print(rsetmd.getColumnName(i));
-                int colSize = rsetmd.getColumnDisplaySize(i);
-                for (int k = 0; k < colSize - rsetmd.getColumnName(i).length(); k++)
+                System.out.print(resultSetMetaData.getColumnName(i));
+                int colSize = resultSetMetaData.getColumnDisplaySize(i);
+                for (int k = 0; k < colSize - resultSetMetaData.getColumnName(i).length(); k++)
                     System.out.print(" ");
             }
 
             System.out.println("");
 
-            while (rset.next()) {
+            while (resultSet.next()) {
                 for (int i = 1; i <= nCols; i++) {
-                    String val = rset.getString(i);
-                    if (rset.wasNull())
+                    String val = resultSet.getString(i);
+                    if (resultSet.wasNull())
                         System.out.print("null");
                     else
-                        System.out.print(rset.getString(i));
+                        System.out.print(resultSet.getString(i));
 
                     int colSize;
-                    if (rset.wasNull())
+                    if (resultSet.wasNull())
                         colSize = 4;
                     else
-                        colSize = rsetmd.getColumnDisplaySize(i);
+                        colSize = resultSetMetaData.getColumnDisplaySize(i);
 
-                    if (rset.wasNull()) {
+                    if (resultSet.wasNull()) {
                         for (int k = 0; k < colSize - 4; k++)
                             System.out.print(" ");
                     } else {
-                        for (int k = 0; k < colSize - rset.getString(i).length(); k++)
+                        for (int k = 0; k < colSize - resultSet.getString(i).length(); k++)
                             System.out.print(" ");
                     }
                 }
@@ -235,21 +235,21 @@ public class ViewerDB {
     }
 
     public static void main(String args[]) {
-        ViewerDB myViewerDB = new ViewerDB();
+        DataBaseViewer myDataBaseViewer = new DataBaseViewer();
 
         switch (args.length) {
             case 0:
-                myViewerDB.loadConfiguration();
-                myViewerDB.sqlplus(myViewerDB.m_connection_ip, myViewerDB.m_connection_port, myViewerDB.m_connection_sid, myViewerDB.m_user, myViewerDB.m_pass);
+                myDataBaseViewer.loadConfiguration();
+                myDataBaseViewer.sqlplus(myDataBaseViewer.m_connection_ip, myDataBaseViewer.m_connection_port, myDataBaseViewer.m_connection_sid, myDataBaseViewer.m_user, myDataBaseViewer.m_pass);
                 break;
 
             case 5:
-                myViewerDB.m_connection_ip = args[0];
-                myViewerDB.m_connection_port = args[1];
-                myViewerDB.m_connection_sid = args[2];
-                myViewerDB.m_user = args[3];
-                myViewerDB.m_pass = args[4];
-                myViewerDB.sqlplus(myViewerDB.m_connection_ip, myViewerDB.m_connection_port, myViewerDB.m_connection_sid, myViewerDB.m_user, myViewerDB.m_pass);
+                myDataBaseViewer.m_connection_ip = args[0];
+                myDataBaseViewer.m_connection_port = args[1];
+                myDataBaseViewer.m_connection_sid = args[2];
+                myDataBaseViewer.m_user = args[3];
+                myDataBaseViewer.m_pass = args[4];
+                myDataBaseViewer.sqlplus(myDataBaseViewer.m_connection_ip, myDataBaseViewer.m_connection_port, myDataBaseViewer.m_connection_sid, myDataBaseViewer.m_user, myDataBaseViewer.m_pass);
                 break;
 
             default:
