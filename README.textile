@@ -1,0 +1,8 @@
+h1. JAQ
+
+Just Another Query tool
+
+Important: if you want to use Oracle Data Base, you must import the Oracle driver into your maven repository.
+You can use following command to import the jar with the driver
+
+mvn install:install-file -DgroupId=com.oracle -DartifactId=ojdbc14 -Dversion=10.2.0.1.0 -Dpackaging=jar -Dfile=ojdbc.jar -DgeneratePom=true

@@ -1,0 +1,33 @@
+<assembly>
+    <formats>
+        <format>dir</format>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>conf</directory>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>sql</directory>
+            <outputDirectory>sql</outputDirectory>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>run.sh</source>
+            <fileMode>0744</fileMode>
+        </file>
+        <file>
+            <source>run.bat</source>
+            <fileMode>0744</fileMode>
+        </file>
+    </files>
+</assembly>
