@@ -16,11 +16,11 @@ public class QueryResultPrinter {
 
     public void printQueryResult() {
         ResultSetMetaData resultSetMetaData;
-        int nCols;
+        int columnCount;
         try {
             resultSetMetaData = this.resultSet.getMetaData();
-            nCols = resultSetMetaData.getColumnCount();
-            for (int i = 1; i <= nCols; i++) {
+            columnCount = resultSetMetaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
                 System.out.print(resultSetMetaData.getColumnName(i));
                 int colSize = resultSetMetaData.getColumnDisplaySize(i);
                 for (int k = 0; k < colSize - resultSetMetaData.getColumnName(i).length(); k++)
@@ -30,7 +30,7 @@ public class QueryResultPrinter {
             System.out.println("");
 
             while (this.resultSet.next()) {
-                for (int i = 1; i <= nCols; i++) {
+                for (int i = 1; i <= columnCount; i++) {
                     String val = this.resultSet.getString(i);
                     if (this.resultSet.wasNull())
                         System.out.print("null");

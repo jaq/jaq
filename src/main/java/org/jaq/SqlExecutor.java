@@ -13,9 +13,9 @@ import java.sql.SQLException;
  * @author Jorge Rodriguez Barba
  *         <p/>
  */
-public class QueryTool extends DataBasePing {
+public class SqlExecutor extends BaseQueryTool {
 
-    private static Logger logger = Logger.getLogger(QueryTool.class);
+    private static Logger logger = Logger.getLogger(SqlExecutor.class);
 
     public void readFileAndExecQueries(String _file) throws IOException {
         System.out.println();
@@ -137,17 +137,17 @@ public class QueryTool extends DataBasePing {
         }
 
         System.out.println("");
-        QueryTool queryTool = new QueryTool();
+        SqlExecutor sqlExecutor = new SqlExecutor();
         try {
-            queryTool.loadConfiguration();
-            queryTool.initDatabaseConnection();
-            queryTool.readFileAndExecQueries(file);
+            sqlExecutor.loadConfiguration();
+            sqlExecutor.connect();
+            sqlExecutor.readFileAndExecQueries(file);
         } catch (Exception e) {
             logger.error(e);
         } finally {
             logger.info("Trying to finalize connection...");
             try {
-                queryTool.finishDatabaseConnection();
+                sqlExecutor.disconnect();
             } catch (SQLException e) {
                 logger.error(e);
             }

@@ -13,36 +13,7 @@ import java.util.Properties;
  * @author Jorge Rodriguez Barba
  *         <p/>
  */
-public class DataBaseViewer {
-
-    private String m_user, m_pass, m_connection_ip, m_connection_port, m_connection_sid;
-
-    private void loadConfiguration() {
-        Properties prop = new Properties();
-        try {
-            prop.load(new FileInputStream("Connection.properties"));
-            m_connection_ip = (String) prop.get("HostName");
-            m_connection_port = (String) prop.get("Port");
-            m_connection_sid = (String) prop.get("SID");
-            m_user = (String) prop.get("UserName");
-            m_pass = (String) prop.get("Password");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Connection initDatabaseConnection() throws ClassNotFoundException, SQLException {
-        Connection conn;
-
-        System.out.println("Loading oracle driver...");
-        Class.forName("oracle.jdbc.driver.OracleDriver");
-
-        System.out.println("Trying to connecto with jdbc:oracle:thin:" + m_user + "/" + m_pass + "@" + m_connection_ip + ":" + m_connection_port + ":" + m_connection_sid);
-        conn = DriverManager.getConnection("jdbc:oracle:thin:" + m_user + "/" + m_pass + "@" + m_connection_ip + ":" + m_connection_port + ":" + m_connection_sid);
-        return conn;
-    }
+public class DataBaseViewer extends BaseQueryTool{
 
     private List<String> configureAllowedQueries() {
         ArrayList<String> listQueries = new ArrayList<String>();
@@ -79,7 +50,7 @@ public class DataBaseViewer {
         return listQueries;
     }
 
-    private void sqlplus(String connection_ip, String connection_port, String connection_sid, String user, String pass) {
+    private void sqlplus() {
         Connection conn = null;
         String query;
         List<String> listQueries = configureAllowedQueries();
@@ -87,7 +58,7 @@ public class DataBaseViewer {
         try {
             //loadConfiguration();
 
-            conn = initDatabaseConnection();
+            connect();
 
             System.out.println("Creating statement...");
             Statement stmt = conn.createStatement();
@@ -234,22 +205,13 @@ public class DataBaseViewer {
         }
     }
 
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException {
         DataBaseViewer myDataBaseViewer = new DataBaseViewer();
 
         switch (args.length) {
             case 0:
                 myDataBaseViewer.loadConfiguration();
-                myDataBaseViewer.sqlplus(myDataBaseViewer.m_connection_ip, myDataBaseViewer.m_connection_port, myDataBaseViewer.m_connection_sid, myDataBaseViewer.m_user, myDataBaseViewer.m_pass);
-                break;
-
-            case 5:
-                myDataBaseViewer.m_connection_ip = args[0];
-                myDataBaseViewer.m_connection_port = args[1];
-                myDataBaseViewer.m_connection_sid = args[2];
-                myDataBaseViewer.m_user = args[3];
-                myDataBaseViewer.m_pass = args[4];
-                myDataBaseViewer.sqlplus(myDataBaseViewer.m_connection_ip, myDataBaseViewer.m_connection_port, myDataBaseViewer.m_connection_sid, myDataBaseViewer.m_user, myDataBaseViewer.m_pass);
+                myDataBaseViewer.sqlplus();
                 break;
 
             default:

@@ -12,12 +12,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-public class DataBasePing {
+public class BaseQueryTool {
 
     private Connection connection = null;
-    private Logger logger= Logger.getLogger(DataBasePing.class);
+    private Logger logger= Logger.getLogger(BaseQueryTool.class);
 
-    public DataBasePing() {
+    public BaseQueryTool() {
         BasicConfigurator.configure();
         PropertyConfigurator.configure("conf/log4j.properties");
     }
