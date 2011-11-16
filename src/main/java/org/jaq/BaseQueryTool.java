@@ -1,8 +1,6 @@
 package org.jaq;
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -14,55 +12,58 @@ import java.util.Properties;
 
 public class BaseQueryTool {
 
+    public static final String DEFAULT_CONFIGURATION_PATH = "conf/jaq.properties";
+
+    private Logger m_logger = Logger.getLogger(BaseQueryTool.class);
+
     private Connection m_connection = null;
-    private Logger     logger     = Logger.getLogger(BaseQueryTool.class);
-    private Statement statement;
-    private String    url;
-    private String    driver;
-    private String    user;
-    private String    password;
-    private int privelegeMode = 0;
+    private Statement m_statement;
+    private String m_url;
+    private String m_driver;
+    private String m_user;
+    private String m_password;
+    private int m_privelegeMode = 0;
 
 
     public BaseQueryTool() {
     }
 
     public Statement getStatement() {
-        return statement;
+        return m_statement;
     }
 
-    protected void loadConfiguration() throws IOException {
+    protected void loadConfiguration(String _configPath) throws IOException {
         Properties properties = new Properties();
-        properties.load(new FileInputStream("conf/jaq.properties"));
-        this.url = properties.getProperty("url");
-        this.driver = properties.getProperty("driver");
-        this.user = properties.getProperty("user");
-        this.password = properties.getProperty("password");
-        this.privelegeMode = new Integer(properties.getProperty("enableFullAccess"));
+        properties.load(new FileInputStream(_configPath));
+        m_url = properties.getProperty("url");
+        m_driver = properties.getProperty("driver");
+        m_user = properties.getProperty("user");
+        m_password = properties.getProperty("password");
+        m_privelegeMode = new Integer(properties.getProperty("enableFullAccess"));
     }
 
     protected void connect() throws ClassNotFoundException, SQLException {
-        logger.info("Loading oracle driver...");
-        Class.forName(this.driver);
+        m_logger.info("Loading driver...");
+        Class.forName(m_driver);
 
-        logger.info("Trying to connect to " + this.url + " with credentials " + this.user + "/" + this.password);
-        m_connection = DriverManager.getConnection(url, user, password);
+        m_logger.info("Trying to connect to " + m_url + " with credentials " + m_user + "/" + m_password);
+        m_connection = DriverManager.getConnection(m_url, m_user, m_password);
 
-        logger.info("Creating statement...");
-        this.statement = m_connection.createStatement();
-        logger.info("\t... statement created");
+        m_logger.info("Creating m_statement...");
+        m_statement = m_connection.createStatement();
+        m_logger.info("\t... m_statement created");
     }
 
     protected void disconnect() throws SQLException {
-        logger.info("Closing statement..");
-        this.statement.close();
-        logger.info("\t... statement closed");
-        logger.info("Closing m_connection...");
+        m_logger.info("Closing m_statement..");
+        m_statement.close();
+        m_logger.info("\t... m_statement closed");
+        m_logger.info("Closing m_connection...");
         m_connection.close();
-        logger.info("\t... m_connection closed");
+        m_logger.info("\t... m_connection closed");
     }
 
     public int getPrivelegeMode() {
-        return privelegeMode;
+        return m_privelegeMode;
     }
 }

@@ -12,19 +12,20 @@ import java.io.PrintWriter;
  */
 public class Jaq {
 
-    private static Logger logger= Logger.getLogger(Jaq.class);
+    private static Logger sm_logger = Logger.getLogger(Jaq.class);
 
     public Options getOptions() {
-        return options;
+        return m_options;
     }
 
-    private Options options;
+    private Options m_options;
 
     public Jaq() {
-        options= new Options();
-        options.addOption("s", "sql", false, "Execute SQL sentence");
-        options.addOption("p", "ping", false, "Ping Data Base");
-        options.addOption("h", "help", false, "Print help");
+        m_options = new Options();
+        m_options.addOption("s", "sql", true, "Execute SQL sentence");
+        m_options.addOption("c", "config", true, "Execute SQL sentence");
+        m_options.addOption("p", "ping", false, "Ping Data Base");
+        m_options.addOption("h", "help", false, "Print help");
 
         BasicConfigurator.configure();
         PropertyConfigurator.configure("conf/log4j.properties");
@@ -56,14 +57,14 @@ public class Jaq {
         for (String argument : commandLineArguments) {
             builder.append(argument).append(" ");
         }
-        logger.debug(builder.toString());
+        sm_logger.debug(builder.toString());
     }
 
-    public static void main(String[] commandLineArguments) {
+    public static void main(String[] _args) {
 
 
-        String applicationName = "JAQ";
-        System.out.println("[JAQ - Just Another Query tool]");
+        String applicationName = "Jaq";
+        System.out.println("[Jaq - Just Another Query tool]");
         System.out.println();
 
 
@@ -71,31 +72,30 @@ public class Jaq {
         Options options= jaq.getOptions();
 
         int maxPrintColumns = 80;
-        if (commandLineArguments.length < 1) {
+        if (_args.length < 1) {
 
             HelpFormatter usageFormatter = new HelpFormatter();
             usageFormatter.printUsage(new PrintWriter(System.out), maxPrintColumns, applicationName, options);
-
-            jaq.printHelp(options, maxPrintColumns, "GNU HELP", "End of GNU Help", 5, 3, true);
+            jaq.printHelp(options, maxPrintColumns, "Jaq help", "Enjoy using Jaq", 5, 3, true);
         }
 
-        jaq.displayProvidedCommandLineArguments(commandLineArguments);
+        jaq.displayProvidedCommandLineArguments(_args);
 
         CommandLineParser cmdLineGnuParser = new GnuParser();
         CommandLine commandLine;
         try {
-            commandLine = cmdLineGnuParser.parse(options, commandLineArguments);
+            commandLine = cmdLineGnuParser.parse(options, _args);
             if (commandLine.hasOption('p') || commandLine.hasOption("ping")) {
-                logger.debug("You want to ping Data Base!");
+                sm_logger.debug("You want to ping Data Base!");
             }
             if (commandLine.hasOption('s') || commandLine.hasOption("sql")) {
-                logger.debug("You want to execute sql on Data Base!");
+                sm_logger.debug("You want to execute sql on Data Base!");
             }
             if (commandLine.hasOption('h') || commandLine.hasOption("help")) {
                 jaq.printHelp(options, maxPrintColumns, "GNU HELP", "End of GNU Help", 5, 3, true);
             }
         } catch (ParseException parseException) {
-            logger.error("Encountered exception while parsing command line:", parseException);
+            sm_logger.error("Encountered exception while parsing command line:", parseException);
         }
     }
 }
