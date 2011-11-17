@@ -14,4 +14,4 @@ done
 
 JAVA_OPTS="-Xmx256m -Xms232m -Xss256k"
 
-$JAVA_HOME/bin/java $JAVA_OPTS  -cp $CLASSPATH org.jaq.SqlExecutor $@
+$JAVA_HOME/bin/java $JAVA_OPTS  -cp $CLASSPATH org.jaq.Jaq $@
