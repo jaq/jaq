@@ -1,13 +1,10 @@
 package org.jaq;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * @author Jorge Rodriguez Barba
@@ -204,21 +201,4 @@ public class DataBaseViewer extends BaseQueryTool{
             return "";
         }
     }
-
-    public static void main(String args[]) throws IOException {
-        DataBaseViewer myDataBaseViewer = new DataBaseViewer();
-
-        switch (args.length) {
-            case 0:
-                myDataBaseViewer.loadConfiguration();
-                myDataBaseViewer.sqlplus();
-                break;
-
-            default:
-                System.out.println("You must be invoke: ");
-                System.out.println("- Without arguments to connect using Connection.properties ");
-                System.out.println("- With five arguments: dbip, dbport, dbsid, dbuser, dbpass");
-                break;
-        }
-    }
-} 
+}

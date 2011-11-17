@@ -5,8 +5,6 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 
 /**
@@ -15,7 +13,7 @@ import java.sql.SQLException;
  */
 public class SqlExecutor extends BaseQueryTool {
 
-    private static Logger logger = Logger.getLogger(SqlExecutor.class);
+    private Logger m_logger = Logger.getLogger(SqlExecutor.class);
 
     public void readFileAndExecQueries(String _file) throws IOException {
         System.out.println();
@@ -37,12 +35,12 @@ public class SqlExecutor extends BaseQueryTool {
                     lineInLowercase.startsWith("rem") ||
                     lineInLowercase.startsWith("--")) {
 
-                logger.debug("Comments must be ignored...");
+                m_logger.debug("Comments must be ignored...");
                 query = "";
                 composingQuery = false;
 
             } else if (lineInLowercase.startsWith("spool")) {
-                logger.debug("Comments must be ignored...");
+                m_logger.debug("Comments must be ignored...");
                 query = "";
                 composingQuery = false;
 
@@ -54,7 +52,7 @@ public class SqlExecutor extends BaseQueryTool {
                 }
             } else if ((getPrivelegeMode() == 0) && (lineInLowercase.startsWith("create") || lineInLowercase.startsWith("drop")
                     || lineInLowercase.startsWith("alter"))) {
-                logger.warn("create, drop and alter statements are forbidden!!!");
+                m_logger.warn("create, drop and alter statements are forbidden!!!");
                 System.out.print("");
                 query = "";
                 composingQuery = false;
@@ -90,68 +88,6 @@ public class SqlExecutor extends BaseQueryTool {
         }
         reader.close();
 
-    }
-
-    public void doQuery(String _query) {
-
-        String lowerCaseQuery = _query.toLowerCase();
-        logger.info("Doing query: " + _query);
-        boolean isUpdate = lowerCaseQuery.startsWith("insert") ||
-                lowerCaseQuery.startsWith("update") ||
-                lowerCaseQuery.startsWith("delete");
-
-        try {
-            if (isUpdate) {
-                int execUpdateRes = getStatement().executeUpdate(_query);
-                logger.info("Rows updated: " + execUpdateRes);
-            } else {
-                ResultSet resultSet = getStatement().executeQuery(_query);
-                logger.info("Printing results..");
-                QueryResultPrinter resultPrinter= new QueryResultPrinter(resultSet);
-                resultPrinter.printQueryResult();
-            }
-        } catch (SQLException e) {
-            logger.error("Error executing: " + _query, e);
-        }
-    }
-
-    public static void main(String[] args) {
-        String file = "sql/example.sql";
-
-        switch (args.length) {
-            case 0:
-                System.out.println("Using conf/jaq.properties and ./sql/example.sql query file");
-                break;
-
-            case 1:
-                System.out.println("Using conf/jaq.properties and " + args[0] + " query file");
-                file = args[0];
-                break;
-
-            default:
-                System.out.println("You must be invoke: ");
-                System.out.println("\t- Without arguments for running sql/example.sql ");
-                System.out.println("\t- With one argument, the sql file with your queries");
-                System.exit(0);
-                break;
-        }
-
-        System.out.println("");
-        SqlExecutor sqlExecutor = new SqlExecutor();
-        try {
-            sqlExecutor.loadConfiguration();
-            sqlExecutor.connect();
-            sqlExecutor.readFileAndExecQueries(file);
-        } catch (Exception e) {
-            logger.error(e);
-        } finally {
-            logger.info("Trying to finalize connection...");
-            try {
-                sqlExecutor.disconnect();
-            } catch (SQLException e) {
-                logger.error(e);
-            }
-        }
     }
 }
 

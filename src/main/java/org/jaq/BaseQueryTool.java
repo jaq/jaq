@@ -4,15 +4,10 @@ import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 
 public class BaseQueryTool {
-
-    public static final String DEFAULT_CONFIGURATION_PATH = "conf/jaq.properties";
 
     private Logger m_logger = Logger.getLogger(BaseQueryTool.class);
 
@@ -23,24 +18,26 @@ public class BaseQueryTool {
     private String m_user;
     private String m_password;
     private int m_privelegeMode = 0;
+    private String m_configFilePath= null;
+    private Properties m_properties;
 
-
-    public BaseQueryTool() {
-    }
-
-    public Statement getStatement() {
-        return m_statement;
+    public String getProperty(String _property){
+        return m_properties.getProperty(_property);
     }
 
     protected void loadConfiguration(String _configPath) throws IOException {
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(_configPath));
-        m_url = properties.getProperty("url");
-        m_driver = properties.getProperty("driver");
-        m_user = properties.getProperty("user");
-        m_password = properties.getProperty("password");
-        m_privelegeMode = new Integer(properties.getProperty("enableFullAccess"));
+        if (_configPath != null) {
+            m_configFilePath = _configPath;
+        }
+        m_properties = new Properties();
+        m_properties.load(new FileInputStream(m_configFilePath));
+        m_url = m_properties.getProperty("url");
+        m_driver = m_properties.getProperty("driver");
+        m_user = m_properties.getProperty("user");
+        m_password = m_properties.getProperty("password");
+        m_privelegeMode = new Integer(m_properties.getProperty("enableFullAccess"));
     }
+
 
     protected void connect() throws ClassNotFoundException, SQLException {
         m_logger.info("Loading driver...");
@@ -49,21 +46,54 @@ public class BaseQueryTool {
         m_logger.info("Trying to connect to " + m_url + " with credentials " + m_user + "/" + m_password);
         m_connection = DriverManager.getConnection(m_url, m_user, m_password);
 
-        m_logger.info("Creating m_statement...");
+        m_logger.debug("Creating statement...");
         m_statement = m_connection.createStatement();
-        m_logger.info("\t... m_statement created");
+        m_logger.debug("... statement created");
     }
 
     protected void disconnect() throws SQLException {
-        m_logger.info("Closing m_statement..");
+        m_logger.debug("Closing statement..");
         m_statement.close();
-        m_logger.info("\t... m_statement closed");
-        m_logger.info("Closing m_connection...");
+        m_logger.debug("... statement closed");
+        m_logger.debug("Closing m_connection...");
         m_connection.close();
-        m_logger.info("\t... m_connection closed");
+        m_logger.debug("... connection closed");
     }
 
     public int getPrivelegeMode() {
         return m_privelegeMode;
     }
+
+    public void doQuery(String _query) {
+
+        String lowerCaseQuery = _query.toLowerCase().trim();
+        m_logger.info("Trying to execute query: " + _query);
+        boolean isUpdate = lowerCaseQuery.startsWith("insert") ||
+                lowerCaseQuery.startsWith("update") ||
+                lowerCaseQuery.startsWith("delete");
+        try {
+            if (isUpdate) {
+                int execUpdateRes = m_statement.executeUpdate(_query.trim());
+                m_logger.info("Rows updated: " + execUpdateRes);
+            } else {
+                ResultSet resultSet = m_statement.executeQuery(_query.trim());
+                m_logger.info("Printing results..");
+                QueryResultPrinter resultPrinter = new QueryResultPrinter(resultSet);
+                resultPrinter.printQueryResult();
+            }
+        } catch (SQLException e) {
+            m_logger.error("Error executing: " + _query);
+            m_logger.error("Error detail: "+e.getMessage());
+        }
+    }
+
+    public void ping(){
+        try {
+            ResultSet resultSet = m_statement.executeQuery(getProperty("query.ping"));
+            m_logger.info("Ping OK");
+        } catch (SQLException e) {
+            m_logger.error("Ping KO");
+        }
+    }
+
 }

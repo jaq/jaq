@@ -23,12 +23,12 @@
     </fileSets>
     <files>
         <file>
-            <source>run.sh</source>
+            <source>jaq</source>
             <fileMode>0744</fileMode>
         </file>
         <file>
-            <source>run.bat</source>
-            <fileMode>0744</fileMode>
+            <source>jaq.bat</source>
+            <fileMode>0444</fileMode>
         </file>
     </files>
 </assembly>

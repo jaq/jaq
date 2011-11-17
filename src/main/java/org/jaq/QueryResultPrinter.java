@@ -7,18 +7,18 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 public class QueryResultPrinter {
-    private Logger logger= Logger.getLogger(QueryResultPrinter.class);
-    private ResultSet resultSet;
+    private Logger m_logger = Logger.getLogger(QueryResultPrinter.class);
+    private ResultSet m_resultSet;
 
     public QueryResultPrinter(ResultSet resultSet) {
-        this.resultSet = resultSet;
+        this.m_resultSet = resultSet;
     }
 
     public void printQueryResult() {
         ResultSetMetaData resultSetMetaData;
         int columnCount;
         try {
-            resultSetMetaData = this.resultSet.getMetaData();
+            resultSetMetaData = this.m_resultSet.getMetaData();
             columnCount = resultSetMetaData.getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
                 System.out.print(resultSetMetaData.getColumnName(i));
@@ -29,32 +29,34 @@ public class QueryResultPrinter {
 
             System.out.println("");
 
-            while (this.resultSet.next()) {
+            while (this.m_resultSet.next()) {
                 for (int i = 1; i <= columnCount; i++) {
-                    String val = this.resultSet.getString(i);
-                    if (this.resultSet.wasNull())
+                    String val = this.m_resultSet.getString(i);
+
+                    if (this.m_resultSet.wasNull())
                         System.out.print("null");
                     else
-                        System.out.print(this.resultSet.getString(i));
+                        System.out.print(this.m_resultSet.getString(i));
 
                     int colSize;
-                    if (this.resultSet.wasNull())
+
+                    if (this.m_resultSet.wasNull())
                         colSize = 4;
                     else
                         colSize = resultSetMetaData.getColumnDisplaySize(i);
 
-                    if (this.resultSet.wasNull()) {
+                    if (this.m_resultSet.wasNull()) {
                         for (int k = 0; k < colSize - 4; k++)
                             System.out.print(" ");
                     } else {
-                        for (int k = 0; k < colSize - this.resultSet.getString(i).length(); k++)
+                        for (int k = 0; k < colSize - this.m_resultSet.getString(i).length(); k++)
                             System.out.print(" ");
                     }
                 }
                 System.out.println("");
             }
         } catch (SQLException e) {
-            logger.info("--- It's impossible to print query results", e);
+            m_logger.info("--- It's impossible to print query results", e);
         }
     }
 

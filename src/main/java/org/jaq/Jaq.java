@@ -1,11 +1,16 @@
 package org.jaq;
 
+import jline.ArgumentCompletor;
+import jline.ConsoleReader;
+import jline.SimpleCompletor;
 import org.apache.commons.cli.*;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 
 /**
  * @author Carlos Javier Prados Hijón
@@ -13,10 +18,14 @@ import java.io.PrintWriter;
 public class Jaq {
 
     private static Logger sm_logger = Logger.getLogger(Jaq.class);
+    private static final String DEFAULT_LOG_CONFIG_FILE_PATH = "conf/log4j.properties";
     public static final int SPACES_BEFORE_OPTION = 5;
     public static final int SPACES_BEFORE_OPTION_DESCRIPTION = 3;
     public static final int MAX_PRINT_COLUMNS = 80;
     public static final boolean DISPLAY_USAGE = true;
+    public static final String COMMAND_LINE_SYNTAX = "jaq";
+    public static final String APPLICATION_NAME = "Jaq";
+    public static final String DEFAULT_JAQ_CONFIGURATION_PATH = "conf/jaq.properties";
 
     public Options getOptions() {
         return m_options;
@@ -26,19 +35,15 @@ public class Jaq {
 
     public Jaq() {
         m_options = new Options();
-        m_options.addOption("s", "sql", true, "Execute SQL sentence");
-        m_options.addOption("c", "config", true, "Execute SQL sentence");
-        m_options.addOption("p", "ping", false, "Ping Data Base");
+        m_options.addOption("s", "sql", true, "Execute SQL sentences from file");
+        m_options.addOption("i", "interactive", false, "Enter interactive mode");
+        m_options.addOption("c", "config", true, "Config file path");
+        m_options.addOption("p", "doPing", false, "Ping Data Base");
         m_options.addOption("h", "help", false, "Print help");
-
-        BasicConfigurator.configure();
-        PropertyConfigurator.configure("conf/log4j.properties");
-
+        m_options.addOption("v", "verbose", false, "Activate verbose mode");
     }
 
     private void printHelp(String _header, String _footer) {
-
-        String commandLineSyntax = "java -cp ApacheCommonsCLI.jar";
 
         PrintWriter writer = new PrintWriter(System.out);
 
@@ -46,7 +51,7 @@ public class Jaq {
         helpFormatter.printHelp(
                 writer,
                 MAX_PRINT_COLUMNS,
-                commandLineSyntax,
+                COMMAND_LINE_SYNTAX,
                 _header,
                 m_options,
                 SPACES_BEFORE_OPTION,
@@ -67,39 +72,110 @@ public class Jaq {
 
     public static void main(String[] _args) {
 
+        BasicConfigurator.configure();
+        PropertyConfigurator.configure(DEFAULT_LOG_CONFIG_FILE_PATH);
 
-        String applicationName = "Jaq";
-        System.out.println("[Jaq - Just Another Query tool]");
-        System.out.println();
-
+        sm_logger.info("[Jaq - Just Another Query tool]");
 
         Jaq jaq = new Jaq();
         Options options = jaq.getOptions();
 
         if (_args.length < 1) {
-
             HelpFormatter usageFormatter = new HelpFormatter();
-            usageFormatter.printUsage(new PrintWriter(System.out), MAX_PRINT_COLUMNS, applicationName, options);
+            usageFormatter.printUsage(new PrintWriter(System.out), MAX_PRINT_COLUMNS, APPLICATION_NAME, options);
             jaq.printHelp("Jaq help", "Enjoy using Jaq");
         }
 
         jaq.displayProvidedCommandLineArguments(_args);
 
         CommandLineParser cmdLineGnuParser = new GnuParser();
-        CommandLine commandLine;
+        boolean verbose = false;
         try {
-            commandLine = cmdLineGnuParser.parse(options, _args);
+            CommandLine commandLine = cmdLineGnuParser.parse(options, _args);
+
+            if (commandLine.hasOption('v') || commandLine.hasOption("verbose")) {
+                verbose = true;
+            }
+            String configPath = DEFAULT_JAQ_CONFIGURATION_PATH;
+            if (commandLine.hasOption('c') || commandLine.hasOption("config")) {
+                configPath = commandLine.getOptionValue('c', DEFAULT_JAQ_CONFIGURATION_PATH);
+            }
+
             if (commandLine.hasOption('p') || commandLine.hasOption("ping")) {
-                sm_logger.debug("You want to ping Data Base!");
+                sm_logger.info("Pinging database...");
+                SqlExecutor sqlExecutor = new SqlExecutor();
+                try {
+                    sqlExecutor.loadConfiguration(configPath);
+                    sqlExecutor.connect();
+                    sqlExecutor.ping();
+                    sqlExecutor.disconnect();
+                } catch (IOException e) {
+                    sm_logger.error("Can't find configuration file " + commandLine);
+                } catch (ClassNotFoundException e) {
+                    sm_logger.error("Error loading driver", e);
+                } catch (SQLException e) {
+                    sm_logger.error("Error executing SQL", e);
+                }
+            }
+            if (commandLine.hasOption('i') || commandLine.hasOption("interactive")) {
+                sm_logger.info("Interactive mode");
+
+                SqlExecutor sqlExecutor = new SqlExecutor();
+                try {
+                    sqlExecutor.loadConfiguration(configPath);
+                    sqlExecutor.connect();
+                } catch (IOException e) {
+                    sm_logger.error("Can't find configuration file " + commandLine);
+                } catch (ClassNotFoundException e) {
+                    sm_logger.error("Error loading driver", e);
+                } catch (SQLException e) {
+                    sm_logger.error("Error connecting to data base", e);
+                }
+
+                try {
+                    ConsoleReader consoleReader = new ConsoleReader();
+                    consoleReader.setDefaultPrompt("jaq>");
+                    consoleReader.addCompletor(new ArgumentCompletor(new SimpleCompletor(new String[]{"select",
+                            "delete", "insert", "update", "exit"})));
+                    String command = consoleReader.readLine();
+                    while (!command.equalsIgnoreCase("exit")) {
+                        sqlExecutor.doQuery(command);
+                        command = consoleReader.readLine();
+                    }
+                } catch (IOException e) {
+                    sm_logger.error("Error reading input: " + e.getMessage());
+                }
+
+                try {
+                    sqlExecutor.disconnect();
+                } catch (SQLException e) {
+                    sm_logger.error("Error executing SQL", e);
+                }
             }
             if (commandLine.hasOption('s') || commandLine.hasOption("sql")) {
-                sm_logger.debug("You want to execute sql on Data Base!");
+                SqlExecutor sqlExecutor = new SqlExecutor();
+                try {
+                    sqlExecutor.loadConfiguration(configPath);
+                    sqlExecutor.connect();
+                    sqlExecutor.readFileAndExecQueries(commandLine.getOptionValue('s', "conf/jaq.sql"));
+                    sqlExecutor.disconnect();
+                } catch (IOException e) {
+                    sm_logger.error("Can't find configuration file " + commandLine);
+                } catch (ClassNotFoundException e) {
+                    sm_logger.error("Error loading driver", e);
+                } catch (SQLException e) {
+                    sm_logger.error("Error executing SQL", e);
+                }
             }
             if (commandLine.hasOption('h') || commandLine.hasOption("help")) {
-                jaq.printHelp("GNU HELP", "End of GNU Help");
+                jaq.printHelp("JAQ help", "=================================================");
             }
-        } catch (ParseException parseException) {
-            sm_logger.error("Encountered exception while parsing command line:", parseException);
+        } catch (ParseException e) {
+            if (verbose) {
+                sm_logger.error("Error", e);
+            } else {
+                sm_logger.error(e.getMessage());
+            }
         }
     }
 }

@@ -1,2 +1,2 @@
 -- Simple query
-select * from serviceuser;
+select * from badtable;

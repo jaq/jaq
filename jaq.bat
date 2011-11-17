@@ -12,7 +12,7 @@ FOR %%f IN (lib\*.jar) DO (call :append_classpath "%%f")
 
 echo CLASSPATH = %CLASSPATH%
 
-java -Dfile.encoding=ISO-8859-1 -cp %CLASSPATH% org.jaq.SqlExecutor %1 %2 %3 %4 %5 %6 %7 %8 %9
+java -Dfile.encoding=ISO-8859-1 -cp %CLASSPATH% org.jaq.Jaq %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 GOTO :eof
 
