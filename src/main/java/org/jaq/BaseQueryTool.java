@@ -96,4 +96,8 @@ public class BaseQueryTool {
         }
     }
 
+    public Connection getConnection() {
+        return m_connection;
+    }
+
 }

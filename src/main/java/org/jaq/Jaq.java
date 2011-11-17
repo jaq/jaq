@@ -38,7 +38,7 @@ public class Jaq {
         m_options.addOption("s", "sql", true, "Execute SQL sentences from file");
         m_options.addOption("i", "interactive", false, "Enter interactive mode");
         m_options.addOption("c", "config", true, "Config file path");
-        m_options.addOption("p", "doPing", false, "Ping Data Base");
+        m_options.addOption("p", "ping", false, "Ping Data Base");
         m_options.addOption("h", "help", false, "Print help");
         m_options.addOption("v", "verbose", false, "Activate verbose mode");
     }
