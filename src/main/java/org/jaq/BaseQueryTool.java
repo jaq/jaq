@@ -12,7 +12,6 @@ public class BaseQueryTool {
     private Logger m_logger = Logger.getLogger(BaseQueryTool.class);
 
     private Connection m_connection = null;
-    //private Statement m_statement;
     private String m_url;
     private String m_driver;
     private String m_user;
@@ -45,10 +44,6 @@ public class BaseQueryTool {
 
         m_logger.info("Trying to connect to " + m_url + " with credentials " + m_user + "/" + m_password);
         m_connection = DriverManager.getConnection(m_url, m_user, m_password);
-
-        //m_logger.debug("Creating statement...");
-        //m_statement = m_connection.createStatement();
-        //m_logger.debug("... statement created");
     }
 
     protected void disconnect() throws SQLException {
