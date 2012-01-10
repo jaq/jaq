@@ -12,7 +12,7 @@ public class BaseQueryTool {
     private Logger m_logger = Logger.getLogger(BaseQueryTool.class);
 
     private Connection m_connection = null;
-    private Statement m_statement;
+    //private Statement m_statement;
     private String m_url;
     private String m_driver;
     private String m_user;
@@ -46,14 +46,14 @@ public class BaseQueryTool {
         m_logger.info("Trying to connect to " + m_url + " with credentials " + m_user + "/" + m_password);
         m_connection = DriverManager.getConnection(m_url, m_user, m_password);
 
-        m_logger.debug("Creating statement...");
-        m_statement = m_connection.createStatement();
-        m_logger.debug("... statement created");
+        //m_logger.debug("Creating statement...");
+        //m_statement = m_connection.createStatement();
+        //m_logger.debug("... statement created");
     }
 
     protected void disconnect() throws SQLException {
         m_logger.debug("Closing statement..");
-        m_statement.close();
+        //m_statement.close();
         m_logger.debug("... statement closed");
         m_logger.debug("Closing m_connection...");
         m_connection.close();
@@ -71,29 +71,52 @@ public class BaseQueryTool {
         boolean isUpdate = lowerCaseQuery.startsWith("insert") ||
                 lowerCaseQuery.startsWith("update") ||
                 lowerCaseQuery.startsWith("delete");
+
         try {
-            if (isUpdate) {
-                int execUpdateRes = m_statement.executeUpdate(_query.trim());
-                m_logger.info("Rows updated: " + execUpdateRes);
-            } else {
-                ResultSet resultSet = m_statement.executeQuery(_query.trim());
-                m_logger.info("Printing results..");
-                QueryResultPrinter resultPrinter = new QueryResultPrinter(resultSet);
-                resultPrinter.printQueryResult();
+            m_logger.debug("Creating statement...");
+            Statement statement = m_connection.createStatement();
+            m_logger.debug("... statement created");
+
+            try {
+                if (isUpdate) {
+                    int execUpdateRes = statement.executeUpdate(_query.trim());
+                    m_logger.info("Rows updated: " + execUpdateRes);
+                } else {
+                    ResultSet resultSet = statement.executeQuery(_query.trim());
+                    m_logger.info("Printing results..");
+                    QueryResultPrinter resultPrinter = new QueryResultPrinter(resultSet);
+                    resultPrinter.printQueryResult();
+                }
+            } catch (SQLException e) {
+                m_logger.error("Error executing: " + _query);
+                m_logger.error("Error detail: "+e.getMessage());
             }
-        } catch (SQLException e) {
-            m_logger.error("Error executing: " + _query);
-            m_logger.error("Error detail: "+e.getMessage());
+            statement.close();
+
+        } catch (SQLException e){
+            m_logger.error("Error creating statement");
         }
     }
 
     public void ping(){
         try {
-            ResultSet resultSet = m_statement.executeQuery(getProperty("query.ping"));
-            m_logger.info("Ping OK");
-        } catch (SQLException e) {
-            m_logger.error("Ping KO");
+            m_logger.debug("Creating statement...");
+            Statement statement = m_connection.createStatement();
+            m_logger.debug("... statement created");
+
+            try {
+                ResultSet resultSet = statement.executeQuery(getProperty("query.ping"));
+                m_logger.info("Ping OK");
+            } catch (SQLException e) {
+                m_logger.error("Ping KO");
+            }
+            statement.close();
+
+        } catch (SQLException e){
+            m_logger.error("Error creating statement");
         }
+
+
     }
 
     public Connection getConnection() {
