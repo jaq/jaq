@@ -48,7 +48,6 @@ public class BaseQueryTool {
 
     protected void disconnect() throws SQLException {
         m_logger.debug("Closing statement..");
-        //m_statement.close();
         m_logger.debug("... statement closed");
         m_logger.debug("Closing m_connection...");
         m_connection.close();
@@ -110,8 +109,6 @@ public class BaseQueryTool {
         } catch (SQLException e){
             m_logger.error("Error creating statement");
         }
-
-
     }
 
     public Connection getConnection() {
